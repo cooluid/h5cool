@@ -108,5 +108,5 @@ func startGateWay() {
 	server.HandleFunc("/", handleConnection)
 	go http.ListenAndServe(fmt.Sprintf(":%d", g.GameConfig.Port), server)
 
-	log.Info("gateway started...")
+	log.Infof("start gateway: %d", g.GameConfig.Port)
 }

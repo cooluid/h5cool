@@ -157,7 +157,7 @@ func startLoginServer() {
 
 	loginServer := http.NewServeMux()
 	loginServer.HandleFunc("/", onHandleLogin)
-	go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", g.GameConfig.LoginPort), loginServer)
+	go http.ListenAndServe(fmt.Sprintf(":%d", g.GameConfig.LoginPort), loginServer)
 
-	log.Info("start login server")
+	log.Infof("start login server: %d", g.GameConfig.LoginPort)
 }
