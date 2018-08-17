@@ -1,0 +1,13 @@
+{
+	"logPath": "d:/gamelog",
+	"logLevel": 1,
+	"loginPort": 9001,
+	"port": 9011,
+	"serverId": 1,
+	"maxConnection": 1000,
+	"realMax": 1000,
+	"configPath": "D:/gopath/src/github.com/sencydai/h5cool/gconfig/configfiles",
+	"accountDB": "root:0987abc123@tcp(127.0.0.1:3306)/cool_account?loc=Local&parseTime=true&readTimeout=5s&writeTimeout=5s",
+	"database": "root:0987abc123@tcp(127.0.0.1:3306)/cool_server_1?loc=Local&parseTime=true&readTimeout=5s&writeTimeout=5s",
+	"crossUrl": "nats://localhost:4222"
+}
