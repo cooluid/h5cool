@@ -41,7 +41,7 @@ func onHandleLogin(w http.ResponseWriter, r *http.Request) {
 			log.Fatalf("onlogin error: %v, %s", err, string(debug.Stack()))
 		}
 		data, _ := json.Marshal(retCode)
-		log.Info(string(data))
+		log.Infof("login retcode: %s", string(data))
 		w.Write(data)
 	}()
 
@@ -57,7 +57,7 @@ func onHandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := http.Get(fmt.Sprintf(loginCheck, appId, appSecret, code))
 	if err != nil {
-		log.Error(err)
+		log.Errorf("login failed: %v", err)
 		retCode["code"] = -3
 		return
 	}
