@@ -157,7 +157,8 @@ func startLoginServer() {
 
 	loginServer := http.NewServeMux()
 	loginServer.HandleFunc("/accountlogin", onHandleLogin)
-	go http.ListenAndServe(fmt.Sprintf(":%d", g.GameConfig.LoginPort), loginServer)
+	go http.ListenAndServeTLS(fmt.Sprintf(":%d", g.GameConfig.LoginPort),
+		"/etc/nginx/1_fanr.co_bundle.crt", "/etc/nginx/2_fanr.co.key", loginServer)
 
 	log.Infof("start login server: %d", g.GameConfig.LoginPort)
 }
