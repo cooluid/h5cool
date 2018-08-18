@@ -75,20 +75,20 @@ func onHandleLogin(w http.ResponseWriter, r *http.Request) {
 		retCode["code"] = -5
 		return
 	}
-	// if _, ok := values["errcode"]; ok {
-	// 	log.Errorf("login failed: %s", values["errmsg"].(string))
-	// 	retCode["code"] = -6
-	// 	return
-	// }
+	if _, ok := values["errcode"]; ok {
+		log.Errorf("login failed: %s", values["errmsg"].(string))
+		retCode["code"] = -6
+		return
+	}
 
-	// openId := values["openid"].(string)
-	// sessionKey := values["session_key"].(string)
-	// if len(openId) == 0 || len(sessionKey) == 0 {
-	// 	retCode["code"] = -7
-	// 	return
-	// }
+	openId := values["openid"].(string)
+	sessionKey := values["session_key"].(string)
+	if len(openId) == 0 || len(sessionKey) == 0 {
+		retCode["code"] = -7
+		return
+	}
 
-	retCode["id"], retCode["level"] = queryAccount(code)
+	retCode["id"], retCode["level"] = queryAccount(openId)
 	retCode["timeout"] = time.Now().Add(time.Minute * 5).Unix()
 	retCode["code"] = 0
 
