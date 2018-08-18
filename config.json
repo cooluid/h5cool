@@ -3,6 +3,8 @@
 	"logLevel": 1,
 	"loginPort": 9001,
 	"port": 9011,
+	"certFile": "",
+	"keyFile": "",
 	"serverId": 1,
 	"maxConnection": 1000,
 	"realMax": 1000,

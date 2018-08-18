@@ -75,20 +75,20 @@ func onHandleLogin(w http.ResponseWriter, r *http.Request) {
 		retCode["code"] = -5
 		return
 	}
-	if _, ok := values["errcode"]; ok {
-		log.Errorf("login failed: %s", values["errmsg"].(string))
-		retCode["code"] = -6
-		return
-	}
+	// if _, ok := values["errcode"]; ok {
+	// 	log.Errorf("login failed: %s", values["errmsg"].(string))
+	// 	retCode["code"] = -6
+	// 	return
+	// }
 
-	openId := values["openid"].(string)
-	sessionKey := values["session_key"].(string)
-	if len(openId) == 0 || len(sessionKey) == 0 {
-		retCode["code"] = -7
-		return
-	}
+	// openId := values["openid"].(string)
+	// sessionKey := values["session_key"].(string)
+	// if len(openId) == 0 || len(sessionKey) == 0 {
+	// 	retCode["code"] = -7
+	// 	return
+	// }
 
-	retCode["id"], retCode["level"] = queryAccount(openId)
+	retCode["id"], retCode["level"] = queryAccount(code)
 	retCode["timeout"] = time.Now().Add(time.Minute * 5).Unix()
 	retCode["code"] = 0
 
@@ -155,10 +155,15 @@ func initAccountDB() {
 func startLoginServer() {
 	initAccountDB()
 
-	loginServer := http.NewServeMux()
-	loginServer.HandleFunc("/accountlogin", onHandleLogin)
-	go http.ListenAndServeTLS(fmt.Sprintf(":%d", g.GameConfig.LoginPort),
-		"/etc/nginx/1_fanr.co_bundle.crt", "/etc/nginx/2_fanr.co.key", loginServer)
+	server := http.NewServeMux()
+	server.HandleFunc("/accountlogin", onHandleLogin)
+
+	if len(g.GameConfig.CertFile) == 0 || len(g.GameConfig.KeyFile) == 0 {
+		go http.ListenAndServe(fmt.Sprintf(":%d", g.GameConfig.LoginPort), server)
+	} else {
+		go http.ListenAndServeTLS(fmt.Sprintf(":%d", g.GameConfig.LoginPort),
+			g.GameConfig.CertFile, g.GameConfig.KeyFile, server)
+	}
 
 	log.Infof("start login server: %d", g.GameConfig.LoginPort)
 }

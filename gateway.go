@@ -106,7 +106,13 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 func startGateWay() {
 	server := http.NewServeMux()
 	server.HandleFunc("/", handleConnection)
-	go http.ListenAndServe(fmt.Sprintf(":%d", g.GameConfig.Port), server)
 
-	log.Infof("start gateway: %d", g.GameConfig.Port)
+	if len(g.GameConfig.CertFile) == 0 || len(g.GameConfig.KeyFile) == 0 {
+		go http.ListenAndServe(fmt.Sprintf(":%d", g.GameConfig.Port), server)
+	} else {
+		go http.ListenAndServeTLS(fmt.Sprintf(":%d", g.GameConfig.Port),
+			g.GameConfig.CertFile, g.GameConfig.KeyFile, server)
+	}
+
+	log.Infof("start login server: %d", g.GameConfig.Port)
 }
