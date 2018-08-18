@@ -49,6 +49,7 @@ func onHandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.ParseForm()
+	log.Infof("login recv: %v", r.PostForm)
 	code := r.PostFormValue("code")
 	if len(code) == 0 {
 		retCode["code"] = -2
