@@ -51,10 +51,13 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 		log.Error(err.Error())
 		return
 	}
+	addr := conn.RemoteAddr().String()
+	log.Infof("client conn: %s", addr)
 	if !addConnCount() {
 		conn.Close()
 		return
 	}
+
 	account := t.NewAccount(conn)
 
 	defer func() {
@@ -83,6 +86,7 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 		if err != nil || g.IsGameClose() {
 			break
 		}
+		log.Infof("client %s recv: %v", addr, data)
 		buff = append(buff, data...)
 		if len(buff) < headSize {
 			continue
