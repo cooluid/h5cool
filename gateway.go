@@ -90,25 +90,24 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 		}
 		buff = append(buff, data...)
 		if len(buff) < headSize {
-			log.Warn("len(buff) < headSize")
 			continue
 		}
 
 		reader := bytes.NewReader(buff)
 		pack.Read(reader, &tag, &dataLen, &cmdId)
-		log.Infof("recv data: len(%d),tag(%x),dataLen(%d),cmdId(%d)", len(buff), tag, dataLen, cmdId)
-
+		log.Infof("recv data: len(%d),tag(0x%x),dataLen(%d),cmdId(%d)", len(buff), tag, dataLen, cmdId)
 		if tag != defTag {
 			break
 		}
-		if dataLen < 0 {
-			break
+		size := headSize + dataLen
+		if len(buff) < size {
+			continue
 		}
-		data = buff[headSize : headSize+dataLen]
+		data = buff[headSize:size]
 		if len(data) < dataLen {
 			continue
 		}
-		buff = buff[headSize+dataLen:]
+		buff = buff[size:]
 		reader.Reset(data)
 		dispatch.PushClientMsg(account, cmdId, reader)
 	}
@@ -125,5 +124,5 @@ func startGateWay() {
 			g.GameConfig.CertFile, g.GameConfig.KeyFile, server)
 	}
 
-	log.Infof("start login server: %d", g.GameConfig.Port)
+	log.Infof("start gateway: %d", g.GameConfig.Port)
 }
