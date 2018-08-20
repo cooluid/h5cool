@@ -104,9 +104,6 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		data = buff[headSize:size]
-		if len(data) < dataLen {
-			continue
-		}
 		buff = buff[size:]
 		reader.Reset(data)
 		dispatch.PushClientMsg(account, cmdId, reader)

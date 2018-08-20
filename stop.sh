@@ -1,5 +1,6 @@
 #!/bin/bash
+pwd=`pwd`
 name=`pwd`/h5cool
-ps aux |grep $name|grep -v grep|grep -v "/bin/bash"| awk '{print $2}'|xargs kill -2
-ret=`ps aux |grep $name|grep -v grep|grep -v "/bin/bash"| awk '{print $ll}'`
-echo "kill "$name" "$ret
+kill -2 `ps axu | grep $name |grep -v grep| awk '{print $2}'`
+
+echo "kill "$name" "
