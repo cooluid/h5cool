@@ -62,6 +62,7 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if err := recover(); err != nil {
+			log.Errorf("client %s panic: %v", addr, err)
 		}
 
 		subConnCount()
@@ -86,19 +87,25 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 		if err != nil || g.IsGameClose() {
 			break
 		}
-		log.Infof("client %s recv: %v", addr, data)
 		buff = append(buff, data...)
 		if len(buff) < headSize {
+			log.Warn("len(buff) < headSize")
 			continue
 		}
 
 		reader := bytes.NewReader(buff)
 		pack.Read(reader, &tag, &dataLen, &cmdId)
-		if tag != defTag || dataLen < 0 {
+		if tag != defTag {
+			log.Errorf("recv error: not correct tag %x", tag)
+			break
+		}
+		if dataLen < 0 {
+			log.Error("recv error: dataLen < 0")
 			break
 		}
 		data = buff[headSize : headSize+dataLen]
 		if len(data) < dataLen {
+			log.Warn("len(data) < dataLen")
 			continue
 		}
 		buff = buff[headSize+dataLen:]
