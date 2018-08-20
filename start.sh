@@ -2,6 +2,9 @@
 pwd=`pwd`
 target=`pwd`/h5cool
 
+sh `pwd`/stop.sh
+sleep 3
+
 if [ -f "${target}-new" ]; then
   echo "upgrading..."
   if [ -f "${target}-backup" ]; then
@@ -13,7 +16,7 @@ if [ -f "${target}-new" ]; then
   mv ${target}-new ${target}
   
   echo "upgrade Complete"
-  sleep 3
+  sleep 1
 fi
 
 $target &
