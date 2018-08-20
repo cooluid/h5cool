@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -62,7 +63,7 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Errorf("client %s panic: %v", addr, err)
+			log.Errorf("client %s panic: %v, %s", addr, err, string(debug.Stack()))
 		}
 
 		subConnCount()
@@ -95,17 +96,16 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 
 		reader := bytes.NewReader(buff)
 		pack.Read(reader, &tag, &dataLen, &cmdId)
+		log.Infof("recv data: len(%d),tag(%x),dataLen(%d),cmdId(%d)", len(buff), tag, dataLen, cmdId)
+
 		if tag != defTag {
-			log.Errorf("recv error: not correct tag %x", tag)
 			break
 		}
 		if dataLen < 0 {
-			log.Error("recv error: dataLen < 0")
 			break
 		}
 		data = buff[headSize : headSize+dataLen]
 		if len(data) < dataLen {
-			log.Warn("len(data) < dataLen")
 			continue
 		}
 		buff = buff[headSize+dataLen:]
