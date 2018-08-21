@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sencydai/h5cool/base"
 	g "github.com/sencydai/h5cool/gconfig"
 	"github.com/sencydai/h5cool/log"
 
@@ -28,9 +29,11 @@ var (
 
 	accountEngine *sql.DB
 
-	selectStmt   *sql.Stmt
-	insertStmt   *sql.Stmt
-	accountMutex sync.Mutex
+	selectStmt  *sql.Stmt
+	selectSemap = base.NewSemaphore(5)
+
+	insertStmt  *sql.Stmt
+	insertMutex sync.Mutex
 )
 
 func onHandleLogin(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +92,7 @@ func onHandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retCode["id"], retCode["level"] = queryAccount(openId)
+	retCode["id"], retCode["level"] = initAccount(openId)
 	retCode["timeout"] = time.Now().Add(time.Minute * 5).Unix()
 	retCode["code"] = 0
 
@@ -99,29 +102,43 @@ func onHandleLogin(w http.ResponseWriter, r *http.Request) {
 	retCode["session"] = hash.Sum(nil)
 }
 
-func queryAccount(openId string) (int, int) {
-	accountMutex.Lock()
-	defer accountMutex.Unlock()
+func initAccount(openId string) (int, int) {
+	if id, gmLevel, err := selectAccount(openId); err == nil {
+		return id, gmLevel
+	}
+
+	return insertAccount(openId), 0
+}
+
+func selectAccount(openId string) (int, int, error) {
+	selectSemap.Require()
+	defer selectSemap.Release()
+
 	var (
 		id      int64
 		gmlevel int
 	)
 	err := selectStmt.QueryRow(openId).Scan(&id, &gmlevel)
+	if err != nil && err != sql.ErrNoRows {
+		panic(err)
+	}
+	return int(id), gmlevel, err
+}
+
+func insertAccount(openId string) int {
+	insertMutex.Lock()
+	defer insertMutex.Unlock()
+
+	result, err := insertStmt.Exec(openId, time.Now())
 	if err != nil {
-		if err != sql.ErrNoRows {
-			panic(err)
-		}
-		result, err := insertStmt.Exec(openId, time.Now())
-		if err != nil {
-			panic(err)
-		}
-		id, err = result.LastInsertId()
-		if err != nil {
-			panic(err)
-		}
+		panic(err)
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		panic(err)
 	}
 
-	return int(id), gmlevel
+	return int(id)
 }
 
 func initAccountDB() {
@@ -142,6 +159,8 @@ func initAccountDB() {
 			}
 		}
 	}()
+
+	accountEngine.SetConnMaxLifetime(0)
 
 	selectStmt, err = accountEngine.Prepare("select id,gmlevel from account where openid=?")
 	if err != nil {
